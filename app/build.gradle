@@ -1,0 +1,20 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.misventas.xiaomi'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.misventas.xiaomi'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+    buildTypes {
+        release {
+            // Firmado con la clave de debug para que el APK sea instalable directamente
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+        }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
