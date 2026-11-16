@@ -64,7 +64,7 @@ main{max-width:560px;margin:0 auto;padding:16px 16px 0;display:flex;flex-directi
 .glance b{display:block;font-size:16px;margin-top:2px}
 .glance small{display:block;color:var(--mi-deep);font-weight:600;font-size:12px}
 .proj{display:flex;gap:12px;align-items:center}
-.proj .pv{font-size:26px;font-weight:800;color:var(--mi-deep)}
+.proj .pv{font-size:24px;font-weight:800;color:var(--mi-deep);white-space:nowrap;flex:none}
 .proj p{margin:0;color:var(--muted);font-size:13px}
 
 .rows{display:flex;flex-direction:column}
@@ -149,6 +149,45 @@ textarea{height:96px;padding:10px 12px;font-size:12px}
 .err{color:var(--danger);font-size:13px;min-height:18px}
 .toast{position:fixed;left:50%;bottom:130px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;max-width:90%}
 .toast[hidden]{display:none}
+
+/* Categorías */
+.tg{padding:0;overflow:hidden}
+.tg-head{display:flex;align-items:center;gap:14px;padding:14px;background:var(--tbg,var(--mi-soft))}
+.tg-head svg{flex:none;filter:drop-shadow(0 3px 5px rgba(33,28,24,.22))}
+.tg-title{flex:1;min-width:0}
+.tg-title b{display:block;font-size:17px;line-height:1.2}
+.tg-title span{display:block;color:var(--muted);font-size:12.5px}
+.tg-tot{text-align:right;flex:none}
+.tg-tot b{display:block;font-size:17px}
+.tg-tot span{color:var(--mi-deep);font-weight:700;font-size:13px}
+.tg-tot small{display:block;color:var(--muted);font-size:12px}
+.tg-body{padding:4px 14px 12px}
+.tg-empty{padding:12px 14px;color:var(--muted);font-size:13px}
+.mini{flex:none;margin-right:2px}
+.sale .s-main{display:flex;align-items:center;gap:10px}
+.sale .s-main>div{min-width:0}
+
+.tg{border-color:var(--tint)}
+.tg .bar{background:var(--tint)}
+.tg .bar i{background:var(--tc)}
+.tg .r1 .r span,.tg-tot span{color:var(--td)}
+.tg .pill{background:var(--tc)}
+.r1 .l .pill,.sale .s-main .pill{color:#fff;font-size:10.5px}
+.tg-head{border-bottom:3px solid var(--tc)}
+
+.cmp{margin-top:10px;display:inline-block;background:rgba(255,255,255,.22);border-radius:10px;padding:6px 10px;font-size:13px}
+.cmp b{font-weight:800}
+.goal-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.goal-pct{font-size:34px;font-weight:800;color:var(--mi-deep);line-height:1.1}
+.goal-n{text-align:right;color:var(--muted);font-size:13px}
+.goal-n b{color:var(--ink);font-size:17px}
+.gbar{height:12px;border-radius:6px;background:var(--mi-soft);overflow:hidden;margin-top:8px}
+.gbar i{display:block;height:100%;background:linear-gradient(90deg,var(--mi),var(--mi-deep));border-radius:6px}
+.goal-l{margin:10px 0 0;font-size:13px;color:var(--muted)}
+.goal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.goal-h h2{margin:0}
+.acts{display:flex;flex-direction:column;align-items:stretch;flex:none}
+.acts .del{padding:5px 8px;text-align:right}
 @media (prefers-reduced-motion:no-preference){.fab:active,.btn:active{transform:scale(.97)}}
 </style>
 </head>
@@ -201,7 +240,7 @@ function defaults(){
     {id:'m5',name:'Redmi Note 14',price:199,comm:6,key:false},
     {id:'m6',name:'Redmi 14C',price:139,comm:3,key:false},
     {id:'m7',name:'Redmi A5',price:99,comm:2,key:false}
-  ],sales:[],customized:false};
+  ],sales:[],customized:false,goals:{}};
 }
 function load(){
   try{
@@ -294,8 +333,94 @@ function headHTML(){
     '<div class="seg" role="tablist">'+seg+'</div>'+
     '<div class="pnav"><button data-act="prev" aria-label="Anterior">‹</button><div class="lab">'+esc(periodLabel())+'</div>'+now+'<button data-act="next" aria-label="Siguiente">›</button></div>'+
     '<div class="hero"><div class="lbl">Comisión del periodo</div><div class="big num">'+money(a.c)+'</div>'+
-    '<div class="subs"><div><span>Ventas</span><b class="num">'+money(a.a)+'</b></div><div><span>Móviles vendidos</span><b class="num">'+nf.format(a.u)+'</b></div></div></div>'+
+    '<div class="subs"><div><span>Ventas</span><b class="num">'+money(a.a)+'</b></div><div><span>Móviles vendidos</span><b class="num">'+nf.format(a.u)+'</b></div></div>'+compareHTML()+'</div>'+
     '</div></header>';
+}
+
+
+/* ---------- Categorías de móvil ---------- */
+var TIERS=[
+  {id:'premium',name:'Premium',range:'Más de 1.000 €',min:1000,body:'#2A2420',rim:'#D9A441',screen:'#40372F',ink:'#D9A441',bg:'#F6EEDD',tc:'#C9962B',td:'#8A6511',tint:'#F1E4C4'},
+  {id:'alta',name:'Gama alta',range:'650 – 999 €',min:650,body:'#FF6900',rim:'#E55F00',screen:'#FFF1E6',ink:'#FF6900',bg:'#FFE9D9',tc:'#FF6900',td:'#C24E00',tint:'#FFE3CF'},
+  {id:'media',name:'Gama media',range:'249 – 649 €',min:249,body:'#3B8CF0',rim:'#2A6FCC',screen:'#EEF5FE',ink:'#3B8CF0',bg:'#E6F0FD',tc:'#2F80ED',td:'#1F5FB5',tint:'#D7E8FC'},
+  {id:'entrada',name:'Gama de entrada',range:'Menos de 249 €',min:0,body:'#35B37E',rim:'#278F63',screen:'#EDF8F3',ink:'#35B37E',bg:'#E3F5EC',tc:'#2EA36B',td:'#1E7A4F',tint:'#CDEEDD'}
+];
+function tierOfPrice(p){for(var i=0;i<TIERS.length;i++){if(p>=TIERS[i].min)return TIERS[i];}return TIERS[3];}
+function tierOfModel(name,fallback){
+  var m=state.models.find(function(x){return x.name===name;});
+  return tierOfPrice(m?m.price:fallback);
+}
+function phoneSVG(t,w){
+  var h=Math.round(w*1.8),cam='',lines='';
+  if(t.id==='premium'){
+    cam='<rect x="8.5" y="8" width="14" height="14" rx="4" fill="#15110E" stroke="'+t.rim+'" stroke-width="0.8"/><circle cx="12.5" cy="12" r="2" fill="#6B5A3A"/><circle cx="18.5" cy="12" r="2" fill="#6B5A3A"/><circle cx="15.5" cy="18" r="2" fill="#6B5A3A"/>';
+    lines='<rect x="9" y="30" width="22" height="3" rx="1.5" fill="'+t.ink+'" opacity=".85"/><rect x="9" y="37" width="16" height="3" rx="1.5" fill="'+t.ink+'" opacity=".5"/><rect x="9" y="44" width="19" height="3" rx="1.5" fill="'+t.ink+'" opacity=".35"/>';
+  }else if(t.id==='alta'){
+    cam='<rect x="8.5" y="8" width="10" height="14" rx="5" fill="#fff" opacity=".95"/><circle cx="13.5" cy="12.5" r="2.1" fill="#3A2A20"/><circle cx="13.5" cy="18" r="2.1" fill="#3A2A20"/>';
+    lines='<rect x="9" y="30" width="22" height="3" rx="1.5" fill="'+t.ink+'" opacity=".9"/><rect x="9" y="37" width="16" height="3" rx="1.5" fill="'+t.ink+'" opacity=".5"/><rect x="9" y="44" width="19" height="3" rx="1.5" fill="'+t.ink+'" opacity=".35"/>';
+  }else if(t.id==='media'){
+    cam='<circle cx="14" cy="13" r="4" fill="#fff" opacity=".95"/><circle cx="14" cy="13" r="2.2" fill="#3A2A20"/>';
+    lines='<rect x="9" y="30" width="22" height="3" rx="1.5" fill="'+t.ink+'" opacity=".9"/><rect x="9" y="37" width="16" height="3" rx="1.5" fill="'+t.ink+'" opacity=".5"/>';
+  }else{
+    cam='<circle cx="20" cy="12" r="3" fill="#fff" opacity=".9"/><circle cx="20" cy="12" r="1.6" fill="#4A4038"/>';
+    lines='<rect x="9" y="30" width="22" height="3" rx="1.5" fill="'+t.ink+'" opacity=".9"/>';
+  }
+  // Pantalla en la mitad inferior simula la parte de atrás con cámara arriba y el frontal con contenido
+  return '<svg class="phone" width="'+w+'" height="'+h+'" viewBox="0 0 40 72" aria-hidden="true">'+
+    '<rect x="2" y="1" width="36" height="70" rx="8" fill="'+t.body+'" stroke="'+t.rim+'" stroke-width="1.4"/>'+
+    '<rect x="5" y="4" width="30" height="64" rx="5.5" fill="'+t.screen+'"/>'+
+    '<rect x="5" y="4" width="30" height="26" rx="5.5" fill="'+t.body+'" opacity=".9"/>'+
+    cam+lines+
+    '<rect x="16" y="62" width="8" height="1.6" rx=".8" fill="'+t.ink+'" opacity=".6"/></svg>';
+}
+
+
+/* ---------- Comparación con el periodo anterior ---------- */
+function daysBetween(a,b){return Math.round((parse(b)-parse(a))/86400000);}
+function compareHTML(){
+  var rg=rangeOf(ui.period,ui.ref),cur=agg(between(rg[0],rg[1]));
+  var pr=rangeOf(ui.period,shift(ui.period,ui.ref,-1)),pb=pr[1];
+  var inprog=isCurrentPeriod()&&ui.period!=='day';
+  if(inprog){
+    var el=daysBetween(rg[0],TODAY_YMD()),lim=ymd(addDays(parse(pr[0]),el));
+    if(lim<pb)pb=lim;
+  }
+  var prev=agg(between(pr[0],pb));
+  var name={day:'ayer',week:'la semana anterior',month:'el mes anterior'}[ui.period];
+  var tramo=inprog?' (mismo tramo)':'';
+  if(prev.c<=0)return '<div class="cmp">Sin comisión en '+name+tramo+'</div>';
+  var d=Math.round((cur.c-prev.c)/prev.c*100);
+  var txt=d>=0?'<b>▲ '+d+' %</b> más':'<b>▼ '+Math.abs(d)+' %</b> menos';
+  return '<div class="cmp">'+txt+' que '+name+tramo+' · '+money(prev.c)+'</div>';
+}
+
+/* ---------- Objetivo mensual de ventas (en euros, uno por mes) ---------- */
+function monthKey(y,m){return y+'-'+pad(m+1);}
+function goalFor(y,m){
+  var g=state.goals||{},has=function(k){return Object.prototype.hasOwnProperty.call(g,k);};
+  if(has(monthKey(y,m)))return {v:+g[monthKey(y,m)]||0,inh:false};
+  for(var i=1;i<=24;i++){
+    var t=new Date(y,m-i,1),k=monthKey(t.getFullYear(),t.getMonth());
+    if(has(k))return {v:+g[k]||0,inh:true};
+  }
+  return {v:0,inh:false};
+}
+function goalHTML(){
+  var r=ui.ref,y=r.getFullYear(),m=r.getMonth(),g=goalFor(y,m),title='Objetivo de '+MONL[m];
+  if(ui.editGoal){
+    return '<section class="card"><h2>'+title+'</h2><div class="fld"><label for="goal-in">Ventas que quieres hacer este mes (€)</label><input id="goal-in" type="number" inputmode="decimal" min="0" step="100" value="'+(g.v||'')+'" placeholder="Ej. 20000"></div><div class="btns" style="margin-top:10px;justify-content:flex-start"><button class="btn sm" data-act="save-goal">Guardar</button><button class="btn alt sm" data-act="cancel-goal">Cancelar</button></div><p style="margin:10px 0 0;color:var(--muted);font-size:12px">Cada mes tiene su propio objetivo. Si dejas el campo vacío, ese mes queda sin objetivo.'+(g.inh&&g.v?' Ahora se usa el del mes anterior; al guardar, este mes tendrá el suyo.':'')+'</p></section>';
+  }
+  if(g.v<=0){
+    return '<section class="card"><h2>'+title+'</h2><p style="margin:0 0 10px;color:var(--muted);font-size:13px">Pon cuántos euros en ventas quieres hacer este mes y aquí verás cuánto te falta.</p><button class="btn alt sm" data-act="edit-goal">Poner objetivo</button></section>';
+  }
+  var rg=rangeOf('month',r),a=agg(between(rg[0],rg[1])),left=Math.max(0,g.v-a.a);
+  var pct=a.a>=g.v?100:Math.min(99,Math.floor(a.a/g.v*100));
+  var now=new Date(),cur=(y===now.getFullYear()&&m===now.getMonth()),future=new Date(y,m,1)>now,line;
+  if(left<=0)line='¡Objetivo cumplido! Llevas '+money(a.a-g.v)+' de más.';
+  else if(future)line='Este mes todavía no ha empezado.';
+  else if(cur){var dl=daysIn(y,m)-now.getDate()+1;line='Te faltan '+money(left)+' en ventas. Necesitas ≈ '+money(left/dl)+' al día durante '+dl+(dl===1?' día':' días')+'.';}
+  else line='Te faltaron '+money(left)+' en ventas para llegar al objetivo.';
+  return '<section class="card"><div class="goal-h"><h2>'+title+'</h2><button class="del" data-act="edit-goal">Cambiar</button></div><div class="goal-top"><div class="goal-pct num">'+pct+' %</div><div class="goal-n num"><b>'+money(a.a)+'</b> de '+money(g.v)+'</div></div><div class="gbar"><i style="width:'+pct+'%"></i></div><p class="goal-l">'+line+'</p><p class="goal-l" style="margin-top:4px">Comisión de este mes: <b class="num" style="color:var(--mi-deep)">'+money(a.c)+'</b></p>'+(g.inh?'<p class="goal-l" style="margin-top:4px">Es el objetivo del mes anterior. Pulsa Cambiar para fijar el de este mes.</p>':'')+'</section>';
 }
 
 /* ---------- Pestaña Resumen ---------- */
@@ -318,7 +443,7 @@ function projectionHTML(){
   if(a.c<=0)return '';
   var dim=daysIn(n.getFullYear(),n.getMonth()),el=n.getDate();
   var pc=a.c/el*dim,pa=a.a/el*dim;
-  return '<section class="card"><h2>Proyección del mes</h2><div class="proj"><div class="pv num">≈ '+money(pc)+'</div><p>de comisión si mantienes el ritmo ('+el+' de '+dim+' días). Ventas estimadas: '+money(pa)+'.</p></div></section>';
+  return '<section class="card"><h2>Proyección del mes</h2><div class="proj"><div class="pv num">≈ '+money(Math.round(pc))+'</div><p>de comisión si mantienes el ritmo ('+el+' de '+dim+' días). Ventas estimadas: '+money(Math.round(pa))+'.</p></div></section>';
 }
 function accRow(label,sub,t,acc,accLabel,max,dim){
   var w=max>0?Math.max(2,Math.round(t.a/max*100)):0;
@@ -363,33 +488,39 @@ function accumulatedHTML(){
   return '<section class="card"><h2>'+esc(title)+'</h2><div class="rows">'+rows.map(function(x){return accRow(x.label,x.sub,x.t,x.acc,accLabel,max,x.dim);}).join('')+'</div>'+(hint?'<p style="margin:10px 0 0;color:var(--muted);font-size:12px">'+hint+'</p>':'')+'</section>';
 }
 function viewResumen(){
-  if(!state.sales.length)return emptyCard()+glanceHTML();
-  return glanceHTML()+projectionHTML()+accumulatedHTML();
+  if(!state.sales.length)return emptyCard()+glanceHTML()+goalHTML();
+  return glanceHTML()+goalHTML()+projectionHTML()+accumulatedHTML();
 }
 
 /* ---------- Pestaña Modelos ---------- */
 function viewModelos(){
   var rg=rangeOf(ui.period,ui.ref),list=between(rg[0],rg[1]),by={};
   list.forEach(function(s){
-    var o=by[s.model]||(by[s.model]={name:s.model,u:0,a:0,c:0});
-    o.u+=s.qty;o.a+=s.qty*s.price;o.c+=s.qty*s.comm;
+    var o=by[s.model]||(by[s.model]={name:s.model,u:0,a:0,c:0,p:s.price});
+    o.u+=s.qty;o.a+=s.qty*s.price;o.c+=s.qty*s.comm;o.p=s.price;
   });
-  state.models.forEach(function(m){if(m.key&&!by[m.name])by[m.name]={name:m.name,u:0,a:0,c:0};});
+  state.models.forEach(function(m){if(m.key&&!by[m.name])by[m.name]={name:m.name,u:0,a:0,c:0,p:m.price};});
   var arr=Object.keys(by).map(function(k){return by[k];});
-  arr.sort(function(x,y){return (y.c-x.c)||(y.a-x.a)||((isKey(y.name)?1:0)-(isKey(x.name)?1:0))||x.name.localeCompare(y.name);});
-  var tot=agg(list),keyT={u:0,a:0,c:0},othT={u:0,a:0,c:0};
+  var keyT={u:0,a:0,c:0},othT={u:0,a:0,c:0};
   arr.forEach(function(o){var t=isKey(o.name)?keyT:othT;t.u+=o.u;t.a+=o.a;t.c+=o.c;});
-  var max=arr.reduce(function(m,o){return Math.max(m,o.a);},0);
   var split='<section class="card"><h2>Key models frente al resto</h2><div class="split"><div><span>Key models</span><b class="num">'+money(keyT.a)+'</b><small class="num">'+money(keyT.c)+' comisión · '+nf.format(keyT.u)+' uds</small></div><div><span>Otros modelos</span><b class="num">'+money(othT.a)+'</b><small class="num">'+money(othT.c)+' comisión · '+nf.format(othT.u)+' uds</small></div></div></section>';
   if(!arr.length)return '<section class="card"><p style="margin:0;color:var(--muted)">No hay modelos con ventas en este periodo.</p></section>';
-  var rows=arr.map(function(o){
-    var m=state.models.find(function(x){return x.name===o.name;});
-    var sub=o.u>0?unitsLabel(o.u):'Sin ventas';
-    if(m)sub+=' · '+money(m.comm)+' por móvil';
-    var w=max>0&&o.a>0?Math.max(2,Math.round(o.a/max*100)):0;
-    return '<div class="row'+(o.u===0?' dim':'')+'"><div class="r1"><div class="l"><b>'+esc(o.name)+(isKey(o.name)?'<span class="pill">KEY</span>':'')+'</b><span>'+esc(sub)+'</span></div><div class="r"><b class="num">'+money(o.a)+'</b><span class="num">'+money(o.c)+' comisión</span></div></div><div class="bar"><i style="width:'+w+'%"></i></div></div>';
+  var max=arr.reduce(function(m,o){return Math.max(m,o.a);},0);
+  var groups=TIERS.map(function(t){
+    var items=arr.filter(function(o){return tierOfModel(o.name,o.p).id===t.id;});
+    items.sort(function(x,y){return (y.c-x.c)||(y.a-x.a)||((isKey(y.name)?1:0)-(isKey(x.name)?1:0))||x.name.localeCompare(y.name);});
+    var tot=agg(items.map(function(o){return {qty:o.u,price:o.u?o.a/o.u:0,comm:o.u?o.c/o.u:0};}));
+    var rows=items.map(function(o){
+      var m=state.models.find(function(x){return x.name===o.name;});
+      var sub=o.u>0?unitsLabel(o.u):'Sin ventas';
+      if(m)sub+=' · '+money(m.comm)+' por móvil';
+      var w=max>0&&o.a>0?Math.max(2,Math.round(o.a/max*100)):0;
+      return '<div class="row'+(o.u===0?' dim':'')+'"><div class="r1"><div class="l"><b>'+esc(o.name)+(isKey(o.name)?'<span class="pill">KEY</span>':'')+'</b><span>'+esc(sub)+'</span></div><div class="r"><b class="num">'+money(o.a)+'</b><span class="num">'+money(o.c)+' comisión</span></div></div><div class="bar"><i style="width:'+w+'%"></i></div></div>';
+    }).join('');
+    var head='<div class="tg-head" style="--tbg:'+t.bg+'">'+phoneSVG(t,34)+'<div class="tg-title"><b>'+t.name+'</b><span>'+t.range+'</span></div><div class="tg-tot"><b class="num">'+money(tot.a)+'</b><span class="num">'+money(tot.c)+' comisión</span><small class="num">'+unitsLabel(tot.u)+'</small></div></div>';
+    return '<section class="card tg" style="--tc:'+t.tc+';--td:'+t.td+';--tint:'+t.tint+'">'+head+(rows?'<div class="tg-body"><div class="rows">'+rows+'</div></div>':'<div class="tg-empty">Sin modelos en esta categoría en este periodo.</div>')+'</section>';
   }).join('');
-  return split+'<section class="card"><h2>Ventas por modelo</h2><div class="rows">'+rows+'</div><p style="margin:10px 0 0;color:var(--muted);font-size:12px">Total del periodo: '+money(tot.a)+' · comisión '+money(tot.c)+'</p></section>';
+  return split+groups+'<p style="margin:0;text-align:center;color:var(--muted);font-size:12px">Total del periodo: '+money(agg(list).a)+' · comisión '+money(agg(list).c)+'</p>';
 }
 
 /* ---------- Pestaña Historial ---------- */
@@ -405,7 +536,7 @@ function viewHistorial(){
     var t=agg(g.items);
     var items=g.items.map(function(s){
       var ask=ui.confirm==='sale:'+s.id;
-      return '<div class="sale"><div class="s-main"><b>'+esc(s.model)+(s.ex?'<span class="pill ex">EJEMPLO</span>':'')+'</b><span class="num">'+s.qty+' × '+money(s.price)+'</span></div><div class="s-num"><b class="num">'+money(s.qty*s.price)+'</b><span class="num">'+money(s.qty*s.comm)+'</span></div><button class="del'+(ask?' ask':'')+'" data-act="del-sale" data-id="'+s.id+'">'+(ask?'¿Borrar?':'Borrar')+'</button></div>';
+      return '<div class="sale"><div class="s-main"><span class="mini">'+phoneSVG(tierOfModel(s.model,s.price),16)+'</span><div><b>'+esc(s.model)+(s.ex?'<span class="pill ex">EJEMPLO</span>':'')+'</b><span class="num">'+s.qty+' × '+money(s.price)+'</span></div></div><div class="s-num"><b class="num">'+money(s.qty*s.price)+'</b><span class="num">'+money(s.qty*s.comm)+'</span></div><div class="acts"><button class="del" data-act="edit-sale" data-id="'+s.id+'">Editar</button><button class="del'+(ask?' ask':'')+'" data-act="del-sale" data-id="'+s.id+'">'+(ask?'¿Borrar?':'Borrar')+'</button></div></div>';
     }).join('');
     return '<section class="card"><div class="day"><div>'+dayLabel(parse(g.date))+'</div><span class="num">'+money(t.a)+' · '+money(t.c)+' comisión</span></div>'+items+'</section>';
   }).join('');
@@ -430,6 +561,7 @@ function viewAjustes(){
     '<section class="card"><h2>Mis modelos</h2><p style="margin:0;color:var(--muted);font-size:13px">Al cambiar una comisión, solo afecta a las ventas nuevas. Las ya registradas conservan la comisión con la que se guardaron.</p></section>'+
     models+
     '<button class="btn alt" data-act="add-model">+ Añadir modelo</button>'+
+    '<section class="card"><h2>Compartir con tu compañero</h2><p style="margin:0 0 10px;color:var(--muted);font-size:13px">Envía tus ventas por WhatsApp. Tu compañero las importa y las ventas de los dos se juntan sin duplicarse. Funciona sin internet. Las ventas borradas no se borran en el otro móvil.</p>'+'<div class="fld"><label for="share-range">Qué enviar</label><select id="share-range"><option value="60">Últimos 60 días</option><option value="0">Todas las ventas</option></select></div>'+'<div class="btns" style="margin-top:10px;justify-content:flex-start"><button class="btn sm" data-act="share">Enviar mis ventas</button><button class="btn alt sm" data-act="import">Importar del portapapeles</button></div>'+'<p style="margin:10px 0 0;color:var(--muted);font-size:12px">Para importar: en WhatsApp mantén pulsado el mensaje que te enviaron, pulsa Copiar, vuelve aquí y pulsa Importar.</p></section>'+
     '<section class="card"><h2>Copia de seguridad</h2><p style="margin:0 0 10px;color:var(--muted);font-size:13px">Tus datos se guardan solo en este móvil. Copia el texto y guárdalo (por ejemplo en una nota o enviándotelo) para recuperarlo si cambias de teléfono.</p>'+
     '<div class="fld"><label for="backup">Copia de seguridad</label><textarea id="backup" spellcheck="false" placeholder="Pega aquí una copia para restaurar"></textarea></div>'+
     '<div class="btns" style="margin-top:10px;justify-content:flex-start"><button class="btn sm" data-act="copy">Copiar mis datos</button><button class="btn alt sm" data-act="restore">Restaurar</button></div></section>'+
@@ -456,7 +588,8 @@ function toast(msg){
 
 /* ---------- Hoja de venta ---------- */
 function $(id){return document.getElementById(id);}
-function openSale(){
+function openSale(editId){
+  ui.editId=editId||null;
   var sel=$('f-model');
   sel.innerHTML=state.models.map(function(m){return '<option value="'+m.id+'">'+esc(m.name)+(m.key?' (key)':'')+'</option>';}).join('')+'<option value="__other">Otro modelo…</option>';
   $('f-date').value=TODAY_YMD();
@@ -464,6 +597,20 @@ function openSale(){
   $('f-other').value='';
   $('f-err').textContent='';
   applyModel();
+  var title=$('sheet-title'),btn=document.querySelector('[data-act=save-sale]');
+  title.textContent='Nueva venta';btn.textContent='Guardar venta';
+  if(editId){
+    var e=state.sales.find(function(x){return x.id===editId;});
+    if(e){
+      var mm=state.models.find(function(x){return x.name===e.model;});
+      $('f-model').value=mm?mm.id:'__other';
+      $('f-other-wrap').hidden=!!mm;
+      $('f-other').value=mm?'':e.model;
+      $('f-date').value=e.date;$('f-qty').value=e.qty;$('f-price').value=e.price;$('f-comm').value=e.comm;
+      title.textContent='Editar venta';btn.textContent='Guardar cambios';
+      preview();
+    }else ui.editId=null;
+  }
   $('ov').hidden=false;
 }
 function applyModel(){
@@ -490,11 +637,15 @@ function saveSale(){
   if(q<1){err.textContent='Las unidades deben ser 1 o más.';return;}
   if(price<=0){err.textContent='Pon el precio del móvil.';return;}
   if(comm<0){err.textContent='La comisión no puede ser negativa.';return;}
-  state.sales.push({id:uid(),date:date,model:name,qty:q,price:price,comm:comm});
+  var editing=ui.editId&&state.sales.find(function(x){return x.id===ui.editId;});
+  if(editing){
+    editing.date=date;editing.model=name;editing.qty=q;editing.price=price;editing.comm=comm;delete editing.ex;
+  }else state.sales.push({id:uid(),date:date,model:name,qty:q,price:price,comm:comm});
   save();
   $('ov').hidden=true;
+  ui.editId=null;
   ui.ref=parse(date);
-  toast('Venta guardada · comisión '+money(q*comm));
+  toast(editing?'Venta actualizada':'Venta guardada · comisión '+money(q*comm));
   render();
 }
 
@@ -515,11 +666,67 @@ function sampleData(){
   return out;
 }
 
+
+/* ---------- Compartir entre móviles ---------- */
+function buildShare(days){
+  var from='';
+  if(days>0)from=ymd(addDays(new Date(),-days));
+  var sales=state.sales.filter(function(x){return !x.ex&&(!from||x.date>=from);}).map(function(x){return [x.id,x.date,x.model,x.qty,x.price,x.comm];});
+  var models=state.models.map(function(m){return [m.name,m.price,m.comm,m.key?1:0];});
+  return 'XiaomiSalesMM · ventas ('+sales.length+')\nXSMM1:'+JSON.stringify({s:sales,m:models});
+}
+function mergeShare(text){
+  var i=text.indexOf('XSMM1:');
+  if(i<0)throw new Error('formato');
+  var d=JSON.parse(text.slice(i+6).trim());
+  if(!d||!Array.isArray(d.s))throw new Error('formato');
+  var have={};state.sales.forEach(function(x){have[x.id]=1;});
+  var added=0;
+  d.s.forEach(function(r){
+    if(!Array.isArray(r)||r.length<6)return;
+    var id=String(r[0]);
+    if(have[id])return;
+    var q=Math.floor(+r[3]),pr=+r[4],cm=+r[5];
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(r[1])||!(q>=1)||!isFinite(pr)||!isFinite(cm))return;
+    state.sales.push({id:id,date:r[1],model:String(r[2]).slice(0,80),qty:q,price:pr,comm:cm});
+    have[id]=1;added++;
+  });
+  var newModels=0;
+  (d.m||[]).forEach(function(r){
+    if(!Array.isArray(r)||!r[0])return;
+    var name=String(r[0]).slice(0,80);
+    if(state.models.some(function(m){return m.name===name;}))return;
+    state.models.push({id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:name,price:+r[1]||0,comm:+r[2]||0,key:!!r[3]});
+    newModels++;
+  });
+  return {added:added,models:newModels};
+}
+function shareSales(){
+  var days=parseInt($('share-range').value,10)||0;
+  var text=buildShare(days);
+  if(window.Android&&window.Android.share){window.Android.share(text);return;}
+  var ta=$('backup');ta.value=text;ta.focus();ta.select();
+  var ok=false;try{ok=document.execCommand('copy');}catch(x){}
+  toast(ok?'Copiado. Pégalo en WhatsApp':'Selecciona el texto y cópialo a mano');
+}
+function importSales(){
+  var text='';
+  try{if(window.Android&&window.Android.paste)text=window.Android.paste();}catch(x){}
+  if(!text){var ta=$('backup');if(ta)text=ta.value;}
+  try{
+    var r=mergeShare(text||'');
+    save();
+    toast(r.added>0?r.added+(r.added===1?' venta importada':' ventas importadas'):'No había ventas nuevas');
+    render();
+  }catch(x){toast('El portapapeles no tiene ventas de XiaomiSalesMM');}
+}
+
 /* ---------- Eventos ---------- */
 document.addEventListener('click',function(e){
   var el=e.target.closest('[data-act]');if(!el)return;
   var a=el.dataset.act,v=el.dataset.v,id=el.dataset.id;
   if(a!=='del-sale'&&a!=='del-model'&&a!=='wipe')ui.confirm=null;
+  if(a!=='edit-goal'&&a!=='save-goal')ui.editGoal=false;
   switch(a){
     case 'tab':ui.tab=v;ui.confirm=null;render();window.scrollTo(0,0);break;
     case 'period':ui.period=v;render();break;
@@ -527,7 +734,15 @@ document.addEventListener('click',function(e){
     case 'next':ui.ref=shift(ui.period,ui.ref,1);render();break;
     case 'today':ui.ref=new Date();render();break;
     case 'open-sale':openSale();break;
-    case 'close-sale':$('ov').hidden=true;break;
+    case 'edit-sale':openSale(id);break;
+    case 'edit-goal':ui.editGoal=true;render();var gi=$('goal-in');if(gi)gi.focus();break;
+    case 'cancel-goal':ui.editGoal=false;render();break;
+    case 'save-goal':{
+      var gv=parseFloat(String(($('goal-in')||{}).value||'').replace(',','.'));
+      state.goals=state.goals||{};
+      state.goals[monthKey(ui.ref.getFullYear(),ui.ref.getMonth())]=isFinite(gv)&&gv>0?gv:0;
+      save();ui.editGoal=false;toast(gv>0?'Objetivo guardado':'Objetivo quitado');render();break;}
+    case 'close-sale':$('ov').hidden=true;ui.editId=null;break;
     case 'qty-':$('f-qty').value=Math.max(1,Math.floor(nv('f-qty'))-1);preview();break;
     case 'qty+':$('f-qty').value=Math.max(1,Math.floor(nv('f-qty'))+1);preview();break;
     case 'save-sale':saveSale();break;
@@ -550,6 +765,8 @@ document.addEventListener('click',function(e){
       if(ui.confirm==='wipe'){state.sales=[];ui.confirm=null;save();toast('Ventas borradas');}
       else ui.confirm='wipe';
       render();break;
+    case 'share':shareSales();break;
+    case 'import':importSales();break;
     case 'copy':{
       var ta=$('backup');ta.value=JSON.stringify(state);ta.focus();ta.select();
       var ok=false;try{ok=document.execCommand('copy');}catch(x){}
