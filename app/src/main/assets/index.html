@@ -561,7 +561,11 @@ function viewAjustes(){
     '<section class="card"><h2>Mis modelos</h2><p style="margin:0;color:var(--muted);font-size:13px">Al cambiar una comisión, solo afecta a las ventas nuevas. Las ya registradas conservan la comisión con la que se guardaron.</p></section>'+
     models+
     '<button class="btn alt" data-act="add-model">+ Añadir modelo</button>'+
-    '<section class="card"><h2>Compartir con tu compañero</h2><p style="margin:0 0 10px;color:var(--muted);font-size:13px">Envía tus ventas por WhatsApp. Tu compañero las importa y las ventas de los dos se juntan sin duplicarse. Funciona sin internet. Las ventas borradas no se borran en el otro móvil.</p>'+'<div class="fld"><label for="share-range">Qué enviar</label><select id="share-range"><option value="60">Últimos 60 días</option><option value="0">Todas las ventas</option></select></div>'+'<div class="btns" style="margin-top:10px;justify-content:flex-start"><button class="btn sm" data-act="share">Enviar mis ventas</button><button class="btn alt sm" data-act="import">Importar del portapapeles</button></div>'+'<p style="margin:10px 0 0;color:var(--muted);font-size:12px">Para importar: en WhatsApp mantén pulsado el mensaje que te enviaron, pulsa Copiar, vuelve aquí y pulsa Importar.</p></section>'+
+    '<section class="card"><h2>Compartir con tu compañero</h2><p style="margin:0 0 10px;color:var(--muted);font-size:13px">Se crea un archivo con tus ventas y lo envías por WhatsApp. Tu compañero lo descarga y pulsa Importar archivo: las ventas de los dos se juntan sin duplicarse. Funciona sin internet. Las ventas borradas no se borran en el otro móvil.</p>'+
+    '<div class="fld"><label for="share-range">Qué enviar</label><select id="share-range"><option value="60">Últimos 60 días</option><option value="0">Todas las ventas</option></select></div>'+
+    '<div class="btns" style="margin-top:10px;justify-content:flex-start"><button class="btn sm" data-act="share">Enviar mis ventas</button><button class="btn alt sm" data-act="import-file">Importar archivo</button></div>'+
+    '<input type="file" id="imp-file" hidden>'+
+    '<p style="margin:12px 0 6px;color:var(--muted);font-size:12px">Si te llegó como texto en vez de archivo, cópialo en WhatsApp y pulsa aquí:</p><button class="btn alt sm" data-act="import">Importar texto copiado</button></section>'+
     '<section class="card"><h2>Copia de seguridad</h2><p style="margin:0 0 10px;color:var(--muted);font-size:13px">Tus datos se guardan solo en este móvil. Copia el texto y guárdalo (por ejemplo en una nota o enviándotelo) para recuperarlo si cambias de teléfono.</p>'+
     '<div class="fld"><label for="backup">Copia de seguridad</label><textarea id="backup" spellcheck="false" placeholder="Pega aquí una copia para restaurar"></textarea></div>'+
     '<div class="btns" style="margin-top:10px;justify-content:flex-start"><button class="btn sm" data-act="copy">Copiar mis datos</button><button class="btn alt sm" data-act="restore">Restaurar</button></div></section>'+
@@ -704,21 +708,25 @@ function mergeShare(text){
 function shareSales(){
   var days=parseInt($('share-range').value,10)||0;
   var text=buildShare(days);
+  if(window.Android&&window.Android.shareFile){window.Android.shareFile('XiaomiSalesMM-ventas-'+TODAY_YMD()+'.json',text);return;}
   if(window.Android&&window.Android.share){window.Android.share(text);return;}
   var ta=$('backup');ta.value=text;ta.focus();ta.select();
   var ok=false;try{ok=document.execCommand('copy');}catch(x){}
   toast(ok?'Copiado. Pégalo en WhatsApp':'Selecciona el texto y cópialo a mano');
 }
-function importSales(){
-  var text='';
-  try{if(window.Android&&window.Android.paste)text=window.Android.paste();}catch(x){}
-  if(!text){var ta=$('backup');if(ta)text=ta.value;}
+function applyImport(text){
   try{
     var r=mergeShare(text||'');
     save();
     toast(r.added>0?r.added+(r.added===1?' venta importada':' ventas importadas'):'No había ventas nuevas');
     render();
-  }catch(x){toast('El portapapeles no tiene ventas de XiaomiSalesMM');}
+  }catch(x){toast('Eso no son ventas de XiaomiSalesMM');}
+}
+function importSales(){
+  var text='';
+  try{if(window.Android&&window.Android.paste)text=window.Android.paste();}catch(x){}
+  if(!text){var ta=$('backup');if(ta)text=ta.value;}
+  applyImport(text);
 }
 
 /* ---------- Eventos ---------- */
@@ -767,6 +775,7 @@ document.addEventListener('click',function(e){
       render();break;
     case 'share':shareSales();break;
     case 'import':importSales();break;
+    case 'import-file':{var inp=$('imp-file');if(inp)inp.click();break;}
     case 'copy':{
       var ta=$('backup');ta.value=JSON.stringify(state);ta.focus();ta.select();
       var ok=false;try{ok=document.execCommand('copy');}catch(x){}
@@ -784,6 +793,13 @@ document.addEventListener('click',function(e){
 document.addEventListener('change',function(e){
   var t=e.target;
   if(t.id==='f-model'){applyModel();return;}
+  if(t.id==='imp-file'){
+    var f=t.files&&t.files[0];if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){applyImport(String(rd.result||''));};
+    rd.onerror=function(){toast('No se pudo leer el archivo');};
+    rd.readAsText(f);return;
+  }
   var card=t.closest('[data-mid]');
   if(card&&t.dataset.f){
     var m=state.models.find(function(x){return x.id===card.dataset.mid;});if(!m)return;
