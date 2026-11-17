@@ -84,7 +84,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         Window w = getWindow();
-        w.setStatusBarColor(Color.parseColor("#FF6900"));
+        w.setStatusBarColor(Color.parseColor("#F05A00"));
         w.setNavigationBarColor(Color.WHITE);
         web = new WebView(this);
         setContentView(web);

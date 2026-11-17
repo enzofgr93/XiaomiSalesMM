@@ -7,13 +7,16 @@
 <style>
 /* Layout: cabecera naranja con las cifras del periodo, tarjetas blancas debajo, barra de pestañas fija abajo. */
 :root{
-  --mi:#FF6900;
-  --mi-deep:#E55F00;
-  --mi-soft:#FFF1E6;
+  --mi:#F05A00;
+  --mi-deep:#C94700;
+  --mi-dark:#D44E00;
+  --mi-soft:#FFEEE2;
   --ink:#211C18;
   --muted:#80736A;
-  --line:#EEE4DC;
-  --bg:#FBF7F3;
+  --line:#EEE5DD;
+  --bg:#F6F1EB;
+  --sh1:0 1px 2px rgba(70,35,10,.05),0 6px 18px rgba(70,35,10,.07);
+  --sh2:0 10px 28px rgba(201,71,0,.28);
   --card:#FFFFFF;
   --ok:#1B9A58;
   --danger:#C93A2B;
@@ -21,6 +24,7 @@
   color-scheme:light;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.4 var(--font);padding-bottom:150px;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -31,8 +35,8 @@ button{cursor:pointer}
 .top{background:var(--mi);color:#fff;padding:14px 16px 20px;border-radius:0 0 26px 26px}
 .top-in{max-width:560px;margin:0 auto}
 .brand{display:flex;align-items:center;gap:10px}
-.mark{width:38px;height:38px;border-radius:11px;background:#fff;color:var(--mi);display:grid;place-items:center;overflow:hidden;flex:none}
-.mark img{width:100%;height:100%;object-fit:contain}
+.mark{height:32px;min-width:32px;color:#fff;display:grid;place-items:center;flex:none}
+.mark img{height:100%;width:auto;display:block}
 .mark svg{width:22px;height:22px}
 .brand b{display:block;font-size:17px;line-height:1.15}
 .brand small{opacity:.85;font-size:12px}
@@ -57,7 +61,7 @@ button{cursor:pointer}
 main{max-width:560px;margin:0 auto;padding:16px 16px 0;display:flex;flex-direction:column;gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
 .card h2{margin:0 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.note{background:var(--mi-soft);border-color:#FFD9BF;color:#7A3500;font-size:13px}
+.note{background:var(--mi-soft);border-color:#F8D2B8;color:#7A3500;font-size:13px}
 .glance{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .glance div{background:var(--bg);border-radius:12px;padding:10px 8px}
 .glance span{display:block;font-size:12px;color:var(--muted)}
@@ -188,6 +192,88 @@ textarea{height:96px;padding:10px 12px;font-size:12px}
 .goal-h h2{margin:0}
 .acts{display:flex;flex-direction:column;align-items:stretch;flex:none}
 .acts .del{padding:5px 8px;text-align:right}
+
+/* ===== Acabado visual ===== */
+body{letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{display:none}
+
+/* Cabecera */
+.top{position:relative;background:linear-gradient(155deg,var(--mi) 0%,var(--mi-dark) 100%);padding:16px 18px 24px;border-radius:0 0 32px 32px;box-shadow:0 10px 30px rgba(201,71,0,.25);overflow:hidden}
+.top::before{content:"";position:absolute;right:-70px;top:-90px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.2),rgba(255,255,255,0) 68%);pointer-events:none}
+.top-in{position:relative}
+.brand{gap:12px}
+.mark{height:34px;min-width:34px}
+.mark img{height:34px;width:auto}
+.mark svg{width:26px;height:26px}
+.brand b{font-size:17px;font-weight:800;letter-spacing:-.01em}
+.brand small{opacity:.8;font-size:12px}
+.seg{background:rgba(0,0,0,.14);border-radius:16px;padding:4px;margin-top:16px;box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
+.seg button{padding:9px 0;border-radius:12px;font-weight:700;font-size:14px;transition:background .15s,color .15s}
+.seg button.on{background:#fff;color:var(--mi-deep);box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.pnav{margin-top:14px}
+.pnav .lab{font-weight:700;font-size:15px}
+.pnav button{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.28);width:40px;height:40px}
+.pnav .now{border-radius:20px;height:40px}
+.hero{margin-top:16px}
+.hero .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;font-weight:600}
+.hero .big{font-size:46px;font-weight:800;letter-spacing:-.03em;margin-top:2px}
+.hero .subs{gap:28px;margin-top:10px}
+.hero .subs span{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.hero .subs b{font-size:19px}
+.cmp{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.26);border-radius:12px;padding:7px 12px;margin-top:14px}
+.page-title{font-size:26px;letter-spacing:-.02em}
+
+/* Tarjetas */
+main{gap:16px;padding-top:18px}
+.card{border-radius:20px;border:1px solid rgba(238,229,221,.9);box-shadow:var(--sh1);padding:16px}
+.card h2{font-size:11.5px;letter-spacing:.1em;margin-bottom:12px}
+.glance{gap:10px}
+.glance div{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 10px}
+.glance span{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase}
+.glance b{font-size:17px;margin-top:3px;letter-spacing:-.01em}
+.glance small{margin-top:1px}
+.split div{border:1px solid var(--line);border-radius:14px;padding:12px}
+.row{padding:12px 0}
+.bar{height:6px;border-radius:4px;margin-top:8px}
+.bar i{border-radius:4px;background:linear-gradient(90deg,var(--mi),var(--mi-dark))}
+.pill{border-radius:7px;padding:2px 7px}
+.goal-pct{font-size:36px;letter-spacing:-.02em}
+.gbar{height:14px;border-radius:8px;box-shadow:inset 0 1px 2px rgba(70,35,10,.08)}
+.gbar i{border-radius:8px}
+.tg{padding:0;border-radius:20px;overflow:hidden}
+.tg-head{padding:16px}
+.tg-title b{font-size:17px;letter-spacing:-.01em}
+.sale{padding:12px 0}
+.day{margin:2px 2px 8px}
+
+.split small{display:block}
+.uds{display:block;font-style:normal;color:var(--muted);font-size:12px;margin-top:1px}
+
+/* Botones y campos */
+.btn{border-radius:14px;padding:12px 18px;background:linear-gradient(160deg,var(--mi),var(--mi-dark));box-shadow:0 4px 12px rgba(201,71,0,.28);transition:transform .1s}
+.btn.alt{background:var(--mi-soft);color:var(--mi-deep);box-shadow:none;border:1px solid #F8D8C2}
+.btn.warn{background:#FCEBE8;color:var(--danger);box-shadow:none;border:1px solid #F4CFC9}
+.btn.sm{padding:8px 14px;border-radius:12px}
+.del{border-radius:10px}
+.fld input,.fld select,textarea{border:1.5px solid var(--line);border-radius:14px;background:#fff;transition:border-color .15s,box-shadow .15s}
+.fld input:focus,.fld select:focus,textarea:focus{outline:none;border-color:var(--mi);box-shadow:0 0 0 4px rgba(240,90,0,.15)}
+.step button{border-radius:14px}
+
+/* Barra inferior */
+.tabs{background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(70,35,10,.07);border-radius:24px 24px 0 0}
+.tabs button{padding:8px 0 10px;gap:2px;font-size:11px}
+.tabs button svg{box-sizing:content-box;width:24px;height:24px;padding:4px 16px;border-radius:14px;transition:background .15s}
+.tabs button.on svg{background:var(--mi-soft)}
+.tabs button.on{color:var(--mi-deep)}
+.fab{border-radius:26px;background:linear-gradient(160deg,var(--mi),var(--mi-dark));box-shadow:var(--sh2);padding:15px 22px;letter-spacing:-.005em}
+
+/* Hoja */
+.ov{background:rgba(33,20,10,.48);backdrop-filter:blur(3px)}
+.sheet{border-radius:28px 28px 0 0;padding:12px 18px 22px;box-shadow:0 -12px 40px rgba(0,0,0,.2)}
+.sheet::before{content:"";align-self:center;width:42px;height:4px;border-radius:2px;background:#DDD2C9;margin-bottom:2px}
+.sheet h3{font-size:20px;letter-spacing:-.01em}
+.preview{border-radius:16px;border:1px solid #F8D8C2}
+.toast{border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:11px 18px}
 @media (prefers-reduced-motion:no-preference){.fab:active,.btn:active{transform:scale(.97)}}
 </style>
 </head>
@@ -227,9 +313,9 @@ var KEY='mis-ventas-xiaomi-v1';
 var DOW=['dom','lun','mar','mié','jue','vie','sáb'];
 var MON=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 var MONL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-var eur=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2});
-var eur0=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0});
-var nf=new Intl.NumberFormat('es-ES');
+var eur=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2,useGrouping:'always'});
+var eur0=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0,useGrouping:'always'});
+var nf=new Intl.NumberFormat('es-ES',{useGrouping:'always'});
 
 function defaults(){
   return {models:[
@@ -318,7 +404,7 @@ var MARK='<img src="logo.png" alt="" onerror="this.remove()" onload="this.nextEl
 
 /* ---------- Cabecera ---------- */
 function headHTML(){
-  var brand='<div class="brand"><span class="mark">'+MARK+'</span><div><b>XiaomiSalesMM</b><small>Xiaomi · comisiones</small></div></div>';
+  var brand='<div class="brand"><span class="mark">'+MARK+'</span><div><b>XiaomiSalesMM</b><small>Ventas y comisiones</small></div></div>';
   if(ui.tab==='historial'||ui.tab==='ajustes'){
     var t=ui.tab==='historial'?'Historial':'Ajustes';
     var s=ui.tab==='historial'?'Todas tus ventas registradas':'Modelos, comisiones y copia de seguridad';
@@ -341,7 +427,7 @@ function headHTML(){
 /* ---------- Categorías de móvil ---------- */
 var TIERS=[
   {id:'premium',name:'Premium',range:'Más de 1.000 €',min:1000,body:'#2A2420',rim:'#D9A441',screen:'#40372F',ink:'#D9A441',bg:'#F6EEDD',tc:'#C9962B',td:'#8A6511',tint:'#F1E4C4'},
-  {id:'alta',name:'Gama alta',range:'650 – 999 €',min:650,body:'#FF6900',rim:'#E55F00',screen:'#FFF1E6',ink:'#FF6900',bg:'#FFE9D9',tc:'#FF6900',td:'#C24E00',tint:'#FFE3CF'},
+  {id:'alta',name:'Gama alta',range:'650 – 999 €',min:650,body:'#F05A00',rim:'#C94700',screen:'#FFEEE2',ink:'#F05A00',bg:'#FFE8D8',tc:'#F05A00',td:'#B84300',tint:'#FFDFC9'},
   {id:'media',name:'Gama media',range:'249 – 649 €',min:249,body:'#3B8CF0',rim:'#2A6FCC',screen:'#EEF5FE',ink:'#3B8CF0',bg:'#E6F0FD',tc:'#2F80ED',td:'#1F5FB5',tint:'#D7E8FC'},
   {id:'entrada',name:'Gama de entrada',range:'Menos de 249 €',min:0,body:'#35B37E',rim:'#278F63',screen:'#EDF8F3',ink:'#35B37E',bg:'#E3F5EC',tc:'#2EA36B',td:'#1E7A4F',tint:'#CDEEDD'}
 ];
@@ -431,7 +517,7 @@ function glanceHTML(){
   var n=new Date();
   var items=[['Hoy','day'],['Semana','week'],['Mes','month']].map(function(p){
     var r=rangeOf(p[1],n),a=agg(between(r[0],r[1]));
-    return '<div><span>'+p[0]+'</span><b class="num">'+money(a.a)+'</b><small class="num">'+money(a.c)+' comisión</small></div>';
+    return '<div><span>'+p[0]+'</span><b class="num">'+money(a.a)+'</b><small class="num">Com. '+money(a.c)+'</small></div>';
   }).join('');
   return '<section class="card"><h2>Ahora mismo</h2><div class="glance">'+items+'</div></section>';
 }
@@ -503,7 +589,7 @@ function viewModelos(){
   var arr=Object.keys(by).map(function(k){return by[k];});
   var keyT={u:0,a:0,c:0},othT={u:0,a:0,c:0};
   arr.forEach(function(o){var t=isKey(o.name)?keyT:othT;t.u+=o.u;t.a+=o.a;t.c+=o.c;});
-  var split='<section class="card"><h2>Key models frente al resto</h2><div class="split"><div><span>Key models</span><b class="num">'+money(keyT.a)+'</b><small class="num">'+money(keyT.c)+' comisión · '+nf.format(keyT.u)+' uds</small></div><div><span>Otros modelos</span><b class="num">'+money(othT.a)+'</b><small class="num">'+money(othT.c)+' comisión · '+nf.format(othT.u)+' uds</small></div></div></section>';
+  var split='<section class="card"><h2>Key models frente al resto</h2><div class="split"><div><span>Key models</span><b class="num">'+money(keyT.a)+'</b><small class="num">'+money(keyT.c)+' comisión</small><em class="uds num">'+nf.format(keyT.u)+' uds</em></div><div><span>Otros modelos</span><b class="num">'+money(othT.a)+'</b><small class="num">'+money(othT.c)+' comisión</small><em class="uds num">'+nf.format(othT.u)+' uds</em></div></div></section>';
   if(!arr.length)return '<section class="card"><p style="margin:0;color:var(--muted)">No hay modelos con ventas en este periodo.</p></section>';
   var max=arr.reduce(function(m,o){return Math.max(m,o.a);},0);
   var groups=TIERS.map(function(t){
