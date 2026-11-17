@@ -262,7 +262,7 @@ main{gap:16px;padding-top:18px}
 /* Barra inferior */
 .tabs{background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(70,35,10,.07);border-radius:24px 24px 0 0}
 .tabs button{padding:8px 0 10px;gap:2px;font-size:11px}
-.tabs button svg{box-sizing:content-box;width:24px;height:24px;padding:4px 16px;border-radius:14px;transition:background .15s}
+.tabs button svg{box-sizing:content-box;width:24px;height:24px;padding:4px 13px;border-radius:14px;transition:background .15s}
 .tabs button.on svg{background:var(--mi-soft)}
 .tabs button.on{color:var(--mi-deep)}
 .fab{border-radius:26px;background:linear-gradient(160deg,var(--mi),var(--mi-dark));box-shadow:var(--sh2);padding:15px 22px;letter-spacing:-.005em}
@@ -274,6 +274,32 @@ main{gap:16px;padding-top:18px}
 .sheet h3{font-size:20px;letter-spacing:-.01em}
 .preview{border-radius:16px;border:1px solid #F8D8C2}
 .toast{border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:11px 18px}
+
+/* Inventario */
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;font-weight:600;font-size:13px;color:var(--muted)}
+.chip.on{background:var(--mi);border-color:var(--mi);color:#fff}
+.mh{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.mh .nm{flex:1;min-width:0}
+.mh .nm b{display:block;font-size:16px;letter-spacing:-.01em}
+.mh .nm span{color:var(--muted);font-size:12.5px}
+.mh .nm .pill{color:#fff;font-size:10.5px}
+.mh .tot{text-align:right;flex:none}
+.mh .tot b{display:block;font-size:20px}
+.mh .tot span{color:var(--muted);font-size:12px}
+.vrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.sw{width:24px;height:24px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.16);box-shadow:inset 0 -3px 5px rgba(0,0,0,.12)}
+.vmain{flex:1;min-width:0}
+.vmain b{display:block;font-size:14.5px}
+.vs{font-size:12px;font-weight:700}
+.vs.ok{color:var(--ok)}.vs.low{color:#A86B00}.vs.out,.vs.rev{color:var(--danger)}
+.vstep{display:flex;align-items:center;gap:6px;flex:none}
+.vstep button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;line-height:1}
+.vstep b{min-width:30px;text-align:center;font-size:17px}
+.vnote{font-size:12.5px;color:var(--muted);min-height:16px}
+.vnote.warn{color:var(--danger);font-weight:600}
+.vmodel{font-weight:700;color:var(--mi-deep)}
+.vadd{margin-top:6px;width:100%}
 @media (prefers-reduced-motion:no-preference){.fab:active,.btn:active{transform:scale(.97)}}
 </style>
 </head>
@@ -290,6 +316,7 @@ main{gap:16px;padding-top:18px}
     <div class="fld"><label for="f-date">Fecha</label><input id="f-date" type="date"></div>
     <div class="fld"><label for="f-model">Modelo</label><select id="f-model"></select></div>
     <div class="fld" id="f-other-wrap" hidden><label for="f-other">Nombre del modelo</label><input id="f-other" type="text" placeholder="Ej. Redmi Note 14 5G" autocomplete="off"></div>
+    <div class="fld" id="f-var-wrap" hidden><label for="f-var">Color y capacidad</label><select id="f-var"></select><div class="vnote" id="f-var-note"></div></div>
     <div class="g2">
       <div class="fld"><label for="f-qty">Unidades</label>
         <div class="step"><button type="button" data-act="qty-" aria-label="Menos">−</button><input id="f-qty" type="number" inputmode="numeric" min="1" step="1" value="1"><button type="button" data-act="qty+" aria-label="Más">+</button></div>
@@ -302,6 +329,20 @@ main{gap:16px;padding-top:18px}
     <button class="btn" data-act="save-sale">Guardar venta</button>
   </div>
 </div>
+<div class="ov" id="ov2" hidden>
+  <div class="sheet" role="dialog" aria-labelledby="v-title">
+    <div class="head"><h3 id="v-title">Nueva variante</h3><button class="x" data-act="close-var" aria-label="Cerrar">✕</button></div>
+    <div class="vmodel" id="v-model"></div>
+    <div class="fld"><label for="v-color">Color</label><input id="v-color" type="text" list="dl-colors" placeholder="Ej. Negro" autocomplete="off"></div>
+    <div class="fld"><label for="v-cap">Capacidad</label><input id="v-cap" type="text" list="dl-caps" placeholder="Ej. 256 GB" autocomplete="off"></div>
+    <div class="fld"><label for="v-stock">Unidades en stock ahora</label><input id="v-stock" type="number" inputmode="numeric" min="0" step="1" value="0"></div>
+    <div class="err" id="v-err" role="alert"></div>
+    <button class="btn" data-act="save-var">Guardar</button>
+    <button class="btn warn" data-act="del-var" id="v-del" hidden>Borrar esta variante</button>
+  </div>
+</div>
+<datalist id="dl-colors"><option value="Negro"><option value="Blanco"><option value="Gris"><option value="Plata"><option value="Azul"><option value="Celeste"><option value="Verde"><option value="Morado"><option value="Lavanda"><option value="Rosa"><option value="Rojo"><option value="Naranja"><option value="Amarillo"><option value="Dorado"><option value="Titanio"><option value="Crema"></datalist>
+<datalist id="dl-caps"><option value="64 GB"><option value="128 GB"><option value="256 GB"><option value="512 GB"><option value="1 TB"><option value="6+128 GB"><option value="8+256 GB"><option value="12+256 GB"><option value="12+512 GB"><option value="16+512 GB"></datalist>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -372,7 +413,7 @@ function isKey(name){var m=state.models.find(function(x){return x.name===name;})
 function unitsLabel(u){return nf.format(u)+(u===1?' móvil':' móviles');}
 
 /* ---------- Estado de la interfaz ---------- */
-var ui={tab:'resumen',period:'day',ref:new Date(),confirm:null};
+var ui={tab:'resumen',period:'day',ref:new Date(),confirm:null,invFilter:'all',vEdit:null,vConfirm:false};
 var TODAY_YMD=function(){return ymd(new Date());};
 
 function periodLabel(){
@@ -398,6 +439,7 @@ var IC={
   resumen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
   modelos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
   historial:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>',
+  inventario:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
   ajustes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
 };
 var MARK='<img src="logo.png" alt="" onerror="this.remove()" onload="this.nextElementSibling.style.display=\'none\'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>';
@@ -405,9 +447,9 @@ var MARK='<img src="logo.png" alt="" onerror="this.remove()" onload="this.nextEl
 /* ---------- Cabecera ---------- */
 function headHTML(){
   var brand='<div class="brand"><span class="mark">'+MARK+'</span><div><b>XiaomiSalesMM</b><small>Ventas y comisiones</small></div></div>';
-  if(ui.tab==='historial'||ui.tab==='ajustes'){
-    var t=ui.tab==='historial'?'Historial':'Ajustes';
-    var s=ui.tab==='historial'?'Todas tus ventas registradas':'Modelos, comisiones y copia de seguridad';
+  if(ui.tab==='historial'||ui.tab==='ajustes'||ui.tab==='inventario'){
+    var t={historial:'Historial',ajustes:'Ajustes',inventario:'Inventario'}[ui.tab];
+    var s={historial:'Todas tus ventas registradas',ajustes:'Modelos, comisiones y copia de seguridad',inventario:'Stock por modelo, color y capacidad'}[ui.tab];
     return '<header class="top"><div class="top-in">'+brand+'<h1 class="page-title">'+t+'</h1><div class="page-sub">'+s+'</div></div></header>';
   }
   var rg=rangeOf(ui.period,ui.ref),a=agg(between(rg[0],rg[1]));
@@ -622,7 +664,7 @@ function viewHistorial(){
     var t=agg(g.items);
     var items=g.items.map(function(s){
       var ask=ui.confirm==='sale:'+s.id;
-      return '<div class="sale"><div class="s-main"><span class="mini">'+phoneSVG(tierOfModel(s.model,s.price),16)+'</span><div><b>'+esc(s.model)+(s.ex?'<span class="pill ex">EJEMPLO</span>':'')+'</b><span class="num">'+s.qty+' × '+money(s.price)+'</span></div></div><div class="s-num"><b class="num">'+money(s.qty*s.price)+'</b><span class="num">'+money(s.qty*s.comm)+'</span></div><div class="acts"><button class="del" data-act="edit-sale" data-id="'+s.id+'">Editar</button><button class="del'+(ask?' ask':'')+'" data-act="del-sale" data-id="'+s.id+'">'+(ask?'¿Borrar?':'Borrar')+'</button></div></div>';
+      return '<div class="sale"><div class="s-main"><span class="mini">'+phoneSVG(tierOfModel(s.model,s.price),16)+'</span><div><b>'+esc(s.model)+(s.ex?'<span class="pill ex">EJEMPLO</span>':'')+'</b><span class="num">'+s.qty+' × '+money(s.price)+(s.color||s.cap?' · '+esc([s.color,s.cap].filter(Boolean).join(' · ')):'')+'</span></div></div><div class="s-num"><b class="num">'+money(s.qty*s.price)+'</b><span class="num">'+money(s.qty*s.comm)+'</span></div><div class="acts"><button class="del" data-act="edit-sale" data-id="'+s.id+'">Editar</button><button class="del'+(ask?' ask':'')+'" data-act="del-sale" data-id="'+s.id+'">'+(ask?'¿Borrar?':'Borrar')+'</button></div></div>';
     }).join('');
     return '<section class="card"><div class="day"><div>'+dayLabel(parse(g.date))+'</div><span class="num">'+money(t.a)+' · '+money(t.c)+' comisión</span></div>'+items+'</section>';
   }).join('');
@@ -647,6 +689,7 @@ function viewAjustes(){
     '<section class="card"><h2>Mis modelos</h2><p style="margin:0;color:var(--muted);font-size:13px">Al cambiar una comisión, solo afecta a las ventas nuevas. Las ya registradas conservan la comisión con la que se guardaron.</p></section>'+
     models+
     '<button class="btn alt" data-act="add-model">+ Añadir modelo</button>'+
+    '<section class="card"><h2>Inventario</h2><label class="chk"><input type="checkbox" id="imp-stock"'+(state.impStock===false?'':' checked')+'> Descontar del stock las ventas que importo</label><p style="margin:10px 0 0;color:var(--muted);font-size:12.5px">Déjalo activado si tu compañero y tú vendéis del mismo stock. Así los dos móviles se quedan con las mismas existencias.</p></section>'+
     '<section class="card"><h2>Compartir con tu compañero</h2><p style="margin:0 0 10px;color:var(--muted);font-size:13px">Se crea un archivo con tus ventas y lo envías por WhatsApp. Tu compañero lo descarga y pulsa Importar archivo: las ventas de los dos se juntan sin duplicarse. Funciona sin internet. Las ventas borradas no se borran en el otro móvil.</p>'+
     '<div class="fld"><label for="share-range">Qué enviar</label><select id="share-range"><option value="60">Últimos 60 días</option><option value="0">Todas las ventas</option></select></div>'+
     '<div class="btns" style="margin-top:10px;justify-content:flex-start"><button class="btn sm" data-act="share">Enviar mis ventas</button><button class="btn alt sm" data-act="import-file">Importar archivo</button></div>'+
@@ -664,10 +707,10 @@ function viewAjustes(){
 function render(){
   var head=document.getElementById('head'),view=document.getElementById('view'),tabs=document.getElementById('tabs');
   head.innerHTML=headHTML();
-  view.innerHTML=ui.tab==='resumen'?viewResumen():ui.tab==='modelos'?viewModelos():ui.tab==='historial'?viewHistorial():viewAjustes();
-  var T=[['resumen','Resumen'],['modelos','Modelos'],['historial','Historial'],['ajustes','Ajustes']];
+  view.innerHTML=ui.tab==='resumen'?viewResumen():ui.tab==='modelos'?viewModelos():ui.tab==='historial'?viewHistorial():ui.tab==='inventario'?viewInventario():viewAjustes();
+  var T=[['resumen','Resumen'],['modelos','Modelos'],['inventario','Inventario'],['historial','Historial'],['ajustes','Ajustes']];
   tabs.innerHTML=T.map(function(t){return '<button data-act="tab" data-v="'+t[0]+'" class="'+(ui.tab===t[0]?'on':'')+'" aria-label="'+t[1]+'">'+IC[t[0]]+t[1]+'</button>';}).join('');
-  document.getElementById('fab').hidden=ui.tab==='ajustes';
+  document.getElementById('fab').hidden=(ui.tab==='ajustes'||ui.tab==='inventario');
   document.title="XiaomiSalesMM";
 }
 var toastT=null;
@@ -695,6 +738,7 @@ function openSale(editId){
       var mm=state.models.find(function(x){return x.name===e.model;});
       $('f-model').value=mm?mm.id:'__other';
       $('f-other-wrap').hidden=!!mm;
+      fillVariants(e.vid);
       $('f-other').value=mm?'':e.model;
       $('f-date').value=e.date;$('f-qty').value=e.qty;$('f-price').value=e.price;$('f-comm').value=e.comm;
       title.textContent='Editar venta';btn.textContent='Guardar cambios';
@@ -709,6 +753,7 @@ function applyModel(){
   var m=state.models.find(function(x){return x.id===v;});
   if(m){$('f-price').value=m.price;$('f-comm').value=m.comm;}
   else{$('f-price').value='';$('f-comm').value='';}
+  fillVariants();
   preview();
 }
 function nv(id){var v=parseFloat(String($(id).value).replace(',','.'));return isFinite(v)?v:0;}
@@ -716,6 +761,7 @@ function preview(){
   var q=Math.max(0,Math.floor(nv('f-qty')));
   $('p-amt').textContent=money(q*nv('f-price'));
   $('p-comm').textContent=money(q*nv('f-comm'));
+  updateVarNote();
 }
 function saveSale(){
   var err=$('f-err'),date=$('f-date').value,q=Math.floor(nv('f-qty')),price=nv('f-price'),comm=nv('f-comm');
@@ -727,10 +773,24 @@ function saveSale(){
   if(q<1){err.textContent='Las unidades deben ser 1 o más.';return;}
   if(price<=0){err.textContent='Pon el precio del móvil.';return;}
   if(comm<0){err.textContent='La comisión no puede ser negativa.';return;}
+  var vsel=null;
+  if(v!=='__other'){
+    var mdl=state.models.find(function(x){return x.id===v;});
+    if(mdl&&mdl.variants&&mdl.variants.length){
+      vsel=mdl.variants.find(function(x){return x.id===$('f-var').value;});
+      if(!vsel){err.textContent='Elige el color y la capacidad.';return;}
+    }
+  }
   var editing=ui.editId&&state.sales.find(function(x){return x.id===ui.editId;});
   if(editing){
     editing.date=date;editing.model=name;editing.qty=q;editing.price=price;editing.comm=comm;delete editing.ex;
-  }else state.sales.push({id:uid(),date:date,model:name,qty:q,price:price,comm:comm});
+    if(vsel){editing.vid=vsel.id;editing.color=vsel.color||'';editing.cap=vsel.cap||'';}
+    else{delete editing.vid;delete editing.color;delete editing.cap;}
+  }else{
+    var ns={id:uid(),date:date,model:name,qty:q,price:price,comm:comm};
+    if(vsel){ns.vid=vsel.id;ns.color=vsel.color||'';ns.cap=vsel.cap||'';}
+    state.sales.push(ns);
+  }
   save();
   $('ov').hidden=true;
   ui.editId=null;
@@ -761,8 +821,8 @@ function sampleData(){
 function buildShare(days){
   var from='';
   if(days>0)from=ymd(addDays(new Date(),-days));
-  var sales=state.sales.filter(function(x){return !x.ex&&(!from||x.date>=from);}).map(function(x){return [x.id,x.date,x.model,x.qty,x.price,x.comm];});
-  var models=state.models.map(function(m){return [m.name,m.price,m.comm,m.key?1:0];});
+  var sales=state.sales.filter(function(x){return !x.ex&&(!from||x.date>=from);}).map(function(x){return [x.id,x.date,x.model,x.qty,x.price,x.comm,x.vid||'',x.color||'',x.cap||''];});
+  var models=state.models.map(function(m){return [m.name,m.price,m.comm,m.key?1:0,(m.variants||[]).map(function(v){return [v.id,v.color,v.cap];})];});
   return 'XiaomiSalesMM · ventas ('+sales.length+')\nXSMM1:'+JSON.stringify({s:sales,m:models});
 }
 function mergeShare(text){
@@ -778,15 +838,23 @@ function mergeShare(text){
     if(have[id])return;
     var q=Math.floor(+r[3]),pr=+r[4],cm=+r[5];
     if(!/^\d{4}-\d{2}-\d{2}$/.test(r[1])||!(q>=1)||!isFinite(pr)||!isFinite(cm))return;
-    state.sales.push({id:id,date:r[1],model:String(r[2]).slice(0,80),qty:q,price:pr,comm:cm});
+    var ns={id:id,date:r[1],model:String(r[2]).slice(0,80),qty:q,price:pr,comm:cm,imp:true};
+    if(r[6]){ns.vid=String(r[6]).slice(0,60);ns.color=String(r[7]||'').slice(0,30);ns.cap=String(r[8]||'').slice(0,30);}
+    state.sales.push(ns);
     have[id]=1;added++;
   });
   var newModels=0;
   (d.m||[]).forEach(function(r){
     if(!Array.isArray(r)||!r[0])return;
     var name=String(r[0]).slice(0,80);
-    if(state.models.some(function(m){return m.name===name;}))return;
-    state.models.push({id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:name,price:+r[1]||0,comm:+r[2]||0,key:!!r[3]});
+    var vlist=(Array.isArray(r[4])?r[4]:[]).filter(function(x){return Array.isArray(x)&&x[0];}).map(function(x){return {id:String(x[0]).slice(0,60),color:String(x[1]||'').slice(0,30),cap:String(x[2]||'').slice(0,30),in:0};});
+    var ex=state.models.find(function(m){return m.name===name;});
+    if(ex){
+      ex.variants=ex.variants||[];
+      vlist.forEach(function(v){if(!ex.variants.some(function(y){return y.id===v.id;}))ex.variants.push(v);});
+      return;
+    }
+    state.models.push({id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:name,price:+r[1]||0,comm:+r[2]||0,key:!!r[3],variants:vlist});
     newModels++;
   });
   return {added:added,models:newModels};
@@ -815,10 +883,133 @@ function importSales(){
   applyImport(text);
 }
 
+
+/* ---------- Inventario ---------- */
+var COLORS=[['negro','#1D1D1F'],['blanco','#F5F5F2'],['celeste','#7CC6F0'],['azul','#3B82F6'],['verde','#2F9E6B'],['turquesa','#2CB5B0'],['gris','#8A8F98'],['plata','#C8CCD2'],['dorado','#D9B36A'],['oro','#D9B36A'],['morado','#8B5CF6'],['lavanda','#B9A7F2'],['rosa','#F4A3C0'],['rojo','#D33A3A'],['naranja','#F07A1A'],['amarillo','#F2CF3C'],['titanio','#9A9187'],['crema','#EFE6D0'],['marron','#7A5538']];
+function slug(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'');}
+function colorHex(name){
+  var n=String(name||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  for(var i=0;i<COLORS.length;i++){if(n.indexOf(COLORS[i][0])>=0)return COLORS[i][1];}
+  return '#CFC6BD';
+}
+function varLabel(v){return [v.color,v.cap].filter(Boolean).join(' · ')||'Sin especificar';}
+function soldMap(){
+  var m={};
+  state.sales.forEach(function(x){
+    if(!x.vid)return;
+    if(x.imp&&state.impStock===false)return;
+    var k=x.model+'|'+x.vid;m[k]=(m[k]||0)+x.qty;
+  });
+  return m;
+}
+function stockOf(m,v,sm){return (+v.in||0)-((sm||soldMap())[m.name+'|'+v.id]||0);}
+function stState(n){return n<0?'rev':n===0?'out':n<=2?'low':'ok';}
+var ST_TXT={ok:'En stock',low:'Poco stock',out:'Agotado',rev:'Revisa el stock'};
+
+function viewInventario(){
+  var sm=soldMap(),units=0,value=0,out=0,low=0,hasVars=false;
+  var models=state.models.slice().sort(function(a,b){return (b.key?1:0)-(a.key?1:0)||a.name.localeCompare(b.name);});
+  models.forEach(function(m){(m.variants||[]).forEach(function(v){
+    hasVars=true;var n=stockOf(m,v,sm);
+    if(n>0){units+=n;value+=n*m.price;}
+    var st=stState(n);if(st==='out')out++;else if(st==='low')low++;
+  });});
+  var sum='<section class="card"><h2>Resumen del stock</h2><div class="glance"><div><span>En stock</span><b class="num">'+nf.format(units)+'</b><small>'+(units===1?'móvil':'móviles')+'</small></div><div><span>Valor</span><b class="num">'+money(value)+'</b><small>a PVP</small></div><div><span>Reponer</span><b class="num">'+(out+low)+'</b><small>'+out+' agotados</small></div></div></section>';
+  var intro=hasVars?'':'<section class="card note"><b>Todavía no hay stock.</b> Pulsa <b>+ Color y capacidad</b> en un modelo y apunta cuántos móviles tienes. Cuando registres una venta eligiendo ese color y capacidad, el stock baja solo.</section>';
+  var f=ui.invFilter;
+  var chips='<div class="chips">'+[['all','Todos'],['low','Poco stock'],['out','Agotados']].map(function(c){return '<button class="chip'+(f===c[0]?' on':'')+'" data-act="inv-filter" data-v="'+c[0]+'">'+c[1]+'</button>';}).join('')+'</div>';
+  var cards=models.map(function(m){
+    var vars=(m.variants||[]).map(function(v){return {v:v,n:stockOf(m,v,sm)};});
+    var total=vars.reduce(function(a,x){return a+Math.max(0,x.n);},0);
+    var shown=vars.filter(function(x){var st=stState(x.n);return f==='all'||(f==='low'&&st==='low')||(f==='out'&&(st==='out'||st==='rev'));});
+    if(f!=='all'&&!shown.length)return '';
+    var rows=shown.map(function(x){
+      var st=stState(x.n);
+      return '<div class="vrow"><span class="sw" style="background:'+colorHex(x.v.color)+'"></span><div class="vmain"><b>'+esc(varLabel(x.v))+'</b><span class="vs '+st+'">'+ST_TXT[st]+'</span></div>'+
+        '<div class="vstep"><button data-act="v-dec" data-m="'+m.id+'" data-id="'+esc(x.v.id)+'" aria-label="Quitar uno">−</button><b class="num">'+x.n+'</b><button data-act="v-inc" data-m="'+m.id+'" data-id="'+esc(x.v.id)+'" aria-label="Añadir uno">+</button></div>'+
+        '<button class="del" data-act="edit-var" data-m="'+m.id+'" data-id="'+esc(x.v.id)+'">Editar</button></div>';
+    }).join('');
+    var sub=vars.length?(vars.length===1?'1 variante':vars.length+' variantes'):'Sin variantes';
+    return '<section class="card"><div class="mh">'+phoneSVG(tierOfPrice(m.price),20)+'<div class="nm"><b>'+esc(m.name)+(m.key?'<span class="pill">KEY</span>':'')+'</b><span>'+sub+'</span></div><div class="tot"><b class="num">'+total+'</b><span>en stock</span></div></div>'+rows+
+      '<button class="btn alt sm vadd" data-act="add-var" data-m="'+m.id+'">+ Color y capacidad</button></section>';
+  }).join('');
+  if(!cards)cards='<section class="card"><p style="margin:0;color:var(--muted)">'+(f==='low'?'No hay modelos con poco stock.':'No hay modelos agotados.')+'</p></section>';
+  return sum+intro+(hasVars?chips:'')+cards;
+}
+
+function openVar(mid,vid){
+  var m=state.models.find(function(x){return x.id===mid;});if(!m)return;
+  ui.vEdit={mid:mid,vid:vid||null};ui.vConfirm=false;
+  var v=vid?(m.variants||[]).find(function(x){return x.id===vid;}):null;
+  if(vid&&!v){ui.vEdit=null;return;}
+  $('v-title').textContent=v?'Editar variante':'Nueva variante';
+  $('v-model').textContent=m.name;
+  $('v-color').value=v?v.color||'':'';
+  $('v-cap').value=v?v.cap||'':'';
+  $('v-stock').value=v?stockOf(m,v):0;
+  $('v-err').textContent='';
+  var del=$('v-del');del.hidden=!v;del.textContent='Borrar esta variante';
+  $('ov2').hidden=false;
+}
+function saveVar(){
+  var ed=ui.vEdit;if(!ed)return;
+  var m=state.models.find(function(x){return x.id===ed.mid;});if(!m)return;
+  var color=$('v-color').value.trim().slice(0,30),cap=$('v-cap').value.trim().slice(0,30);
+  var stock=Math.max(0,Math.floor(parseFloat(String($('v-stock').value).replace(',','.'))||0));
+  var err=$('v-err');
+  if(!color&&!cap){err.textContent='Pon al menos el color o la capacidad.';return;}
+  m.variants=m.variants||[];
+  var key=slug(color)+'-'+slug(cap);
+  var dup=m.variants.some(function(x){return x.id!==ed.vid&&slug(x.color)+'-'+slug(x.cap)===key;});
+  if(dup){err.textContent='Ese color y capacidad ya existe en este modelo.';return;}
+  var v=ed.vid?m.variants.find(function(x){return x.id===ed.vid;}):null;
+  if(!v){v={id:key,color:color,cap:cap,in:0};m.variants.push(v);}
+  else{v.color=color;v.cap=cap;}
+  var sold=soldMap()[m.name+'|'+v.id]||0;
+  v.in=stock+sold;
+  save();ui.vEdit=null;$('ov2').hidden=true;toast('Variante guardada');render();
+}
+function delVar(){
+  var ed=ui.vEdit;if(!ed||!ed.vid)return;
+  if(!ui.vConfirm){ui.vConfirm=true;$('v-del').textContent='¿Seguro? Se borra su stock';return;}
+  var m=state.models.find(function(x){return x.id===ed.mid;});
+  if(m)m.variants=(m.variants||[]).filter(function(x){return x.id!==ed.vid;});
+  save();ui.vEdit=null;ui.vConfirm=false;$('ov2').hidden=true;toast('Variante borrada');render();
+}
+function bumpVar(mid,vid,d){
+  var m=state.models.find(function(x){return x.id===mid;});if(!m)return;
+  var v=(m.variants||[]).find(function(x){return x.id===vid;});if(!v)return;
+  if(d<0&&stockOf(m,v)<=0)return;
+  v.in=(+v.in||0)+d;save();render();
+}
+
+/* Variante dentro del formulario de venta */
+function fillVariants(sel){
+  var m=state.models.find(function(x){return x.id===$('f-model').value;});
+  var wrap=$('f-var-wrap'),box=$('f-var');
+  if(!m||!(m.variants&&m.variants.length)){wrap.hidden=true;box.innerHTML='';updateVarNote();return;}
+  var sm=soldMap();
+  box.innerHTML='<option value="">Elige color y capacidad…</option>'+m.variants.map(function(v){return '<option value="'+esc(v.id)+'">'+esc(varLabel(v))+' · '+stockOf(m,v,sm)+' en stock</option>';}).join('');
+  box.value=sel||'';wrap.hidden=false;updateVarNote();
+}
+function updateVarNote(){
+  var note=$('f-var-note');if(!note)return;
+  note.className='vnote';note.textContent='';
+  var m=state.models.find(function(x){return x.id===$('f-model').value;});
+  var vid=$('f-var').value;
+  if(!m||!vid||$('f-var-wrap').hidden)return;
+  var v=(m.variants||[]).find(function(x){return x.id===vid;});if(!v)return;
+  var avail=stockOf(m,v),ed=ui.editId&&state.sales.find(function(x){return x.id===ui.editId;});
+  if(ed&&ed.vid===v.id&&ed.model===m.name&&!(ed.imp&&state.impStock===false))avail+=ed.qty;
+  var q=Math.max(0,Math.floor(nv('f-qty'))),left=avail-q;
+  if(left>=0)note.textContent='Quedarán '+left+' en stock.';
+  else{note.className='vnote warn';note.textContent='Solo hay '+Math.max(0,avail)+' en stock. Revisa el inventario.';}
+}
+
 /* ---------- Eventos ---------- */
 document.addEventListener('click',function(e){
   var el=e.target.closest('[data-act]');if(!el)return;
-  var a=el.dataset.act,v=el.dataset.v,id=el.dataset.id;
+  var a=el.dataset.act,v=el.dataset.v,id=el.dataset.id,mid=el.dataset.m;
   if(a!=='del-sale'&&a!=='del-model'&&a!=='wipe')ui.confirm=null;
   if(a!=='edit-goal'&&a!=='save-goal')ui.editGoal=false;
   switch(a){
@@ -827,6 +1018,14 @@ document.addEventListener('click',function(e){
     case 'prev':ui.ref=shift(ui.period,ui.ref,-1);render();break;
     case 'next':ui.ref=shift(ui.period,ui.ref,1);render();break;
     case 'today':ui.ref=new Date();render();break;
+    case 'inv-filter':ui.invFilter=v;render();break;
+    case 'v-dec':bumpVar(mid,id,-1);break;
+    case 'v-inc':bumpVar(mid,id,1);break;
+    case 'add-var':openVar(mid,null);break;
+    case 'edit-var':openVar(mid,id);break;
+    case 'save-var':saveVar();break;
+    case 'del-var':delVar();break;
+    case 'close-var':$('ov2').hidden=true;ui.vEdit=null;break;
     case 'open-sale':openSale();break;
     case 'edit-sale':openSale(id);break;
     case 'edit-goal':ui.editGoal=true;render();var gi=$('goal-in');if(gi)gi.focus();break;
@@ -879,6 +1078,8 @@ document.addEventListener('click',function(e){
 document.addEventListener('change',function(e){
   var t=e.target;
   if(t.id==='f-model'){applyModel();return;}
+  if(t.id==='f-var'){updateVarNote();return;}
+  if(t.id==='imp-stock'){state.impStock=t.checked;save();toast(t.checked?'Se descontarán las ventas importadas':'Las ventas importadas no tocarán tu stock');return;}
   if(t.id==='imp-file'){
     var f=t.files&&t.files[0];if(!f)return;
     var rd=new FileReader();
@@ -890,7 +1091,11 @@ document.addEventListener('change',function(e){
   if(card&&t.dataset.f){
     var m=state.models.find(function(x){return x.id===card.dataset.mid;});if(!m)return;
     var f=t.dataset.f;
-    if(f==='name')m.name=t.value.trim()||'Sin nombre';
+    if(f==='name'){
+      var oldName=m.name,newName=t.value.trim()||'Sin nombre';
+      state.sales.forEach(function(x){if(x.model===oldName)x.model=newName;});
+      m.name=newName;
+    }
     else if(f==='key')m.key=t.checked;
     else m[f]=Math.max(0,parseFloat(String(t.value).replace(',','.'))||0);
     state.customized=true;save();
