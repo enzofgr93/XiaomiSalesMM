@@ -299,7 +299,7 @@ main{gap:16px;padding-top:18px}
 .vnote{font-size:12.5px;color:var(--muted);min-height:16px}
 .vnote.warn{color:var(--danger);font-weight:600}
 .vmodel{font-weight:700;color:var(--mi-deep)}
-.vadd{margin-top:6px;width:100%}
+.vadd{margin-top:8px;justify-content:flex-start}
 @media (prefers-reduced-motion:no-preference){.fab:active,.btn:active{transform:scale(.97)}}
 </style>
 </head>
@@ -343,6 +343,20 @@ main{gap:16px;padding-top:18px}
 </div>
 <datalist id="dl-colors"><option value="Negro"><option value="Blanco"><option value="Gris"><option value="Plata"><option value="Azul"><option value="Celeste"><option value="Verde"><option value="Morado"><option value="Lavanda"><option value="Rosa"><option value="Rojo"><option value="Naranja"><option value="Amarillo"><option value="Dorado"><option value="Titanio"><option value="Crema"></datalist>
 <datalist id="dl-caps"><option value="64 GB"><option value="128 GB"><option value="256 GB"><option value="512 GB"><option value="1 TB"><option value="6+128 GB"><option value="8+256 GB"><option value="12+256 GB"><option value="12+512 GB"><option value="16+512 GB"></datalist>
+<div class="ov" id="ov3" hidden>
+  <div class="sheet" role="dialog" aria-labelledby="m-title">
+    <div class="head"><h3 id="m-title">Nuevo modelo</h3><button class="x" data-act="close-model" aria-label="Cerrar">✕</button></div>
+    <div class="fld"><label for="m-name">Nombre del modelo</label><input id="m-name" type="text" placeholder="Ej. Redmi Note 14 Pro" autocomplete="off"></div>
+    <div class="g2">
+      <div class="fld"><label for="m-price">Precio (€)</label><input id="m-price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></div>
+      <div class="fld"><label for="m-comm">Comisión por móvil (€)</label><input id="m-comm" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="m-key"> Es un key model</label>
+    <div class="err" id="m-err" role="alert"></div>
+    <button class="btn" data-act="save-model">Guardar modelo</button>
+    <button class="btn warn" data-act="del-model2" id="m-del" hidden>Quitar este modelo</button>
+  </div>
+</div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -359,20 +373,22 @@ var eur0=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumF
 var nf=new Intl.NumberFormat('es-ES',{useGrouping:'always'});
 
 function defaults(){
-  return {models:[
-    {id:'m1',name:'Xiaomi 15T Pro',price:799,comm:25,key:true},
-    {id:'m2',name:'Xiaomi 15T',price:649,comm:20,key:true},
-    {id:'m3',name:'Redmi Note 14 Pro 5G',price:329,comm:10,key:true},
-    {id:'m4',name:'POCO X7 Pro',price:369,comm:10,key:true},
-    {id:'m5',name:'Redmi Note 14',price:199,comm:6,key:false},
-    {id:'m6',name:'Redmi 14C',price:139,comm:3,key:false},
-    {id:'m7',name:'Redmi A5',price:99,comm:2,key:false}
-  ],sales:[],customized:false,goals:{}};
+  return {models:[],sales:[],customized:false,goals:{},v2:true};
+}
+/* Quita los modelos y ventas de ejemplo de versiones anteriores (una sola vez) */
+function migrate(d){
+  if(d.v2)return d;
+  var DEF={m1:'Xiaomi 15T Pro',m2:'Xiaomi 15T',m3:'Redmi Note 14 Pro 5G',m4:'POCO X7 Pro',m5:'Redmi Note 14',m6:'Redmi 14C',m7:'Redmi A5'};
+  d.models=d.models.filter(function(m){return !(DEF[m.id]&&DEF[m.id]===m.name);});
+  d.sales=d.sales.filter(function(x){return !x.ex;});
+  d.v2=true;
+  try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}
+  return d;
 }
 function load(){
   try{
     var raw=localStorage.getItem(KEY);
-    if(raw){var d=JSON.parse(raw);if(d&&Array.isArray(d.models)&&Array.isArray(d.sales))return d;}
+    if(raw){var d=JSON.parse(raw);if(d&&Array.isArray(d.models)&&Array.isArray(d.sales))return migrate(d);}
   }catch(e){}
   return defaults();
 }
@@ -553,7 +569,8 @@ function goalHTML(){
 
 /* ---------- Pestaña Resumen ---------- */
 function emptyCard(){
-  return '<div class="card empty"><h3>Todavía no hay ventas</h3><p>Registra tu primera venta con el botón naranja. Si quieres ver cómo se ve la app, carga datos de ejemplo y bórralos cuando quieras.</p><div class="btns"><button class="btn" data-act="open-sale">Registrar venta</button><button class="btn alt" data-act="sample">Cargar ejemplo</button></div></div>';
+  var hasM=state.models.length>0;
+  return '<div class="card empty"><h3>Todavía no hay ventas</h3><p>'+(hasM?'Registra tu primera venta con el botón naranja.':'Empieza añadiendo los modelos que vendes y luego registra tu primera venta.')+'</p><div class="btns">'+(hasM?'<button class="btn" data-act="open-sale">Registrar venta</button>':'<button class="btn" data-act="add-model">Añadir modelo</button>')+'</div></div>';
 }
 function glanceHTML(){
   var n=new Date();
@@ -675,20 +692,14 @@ function viewHistorial(){
 /* ---------- Pestaña Ajustes ---------- */
 function viewAjustes(){
   var hasEx=state.sales.some(function(s){return s.ex;});
-  var intro=state.customized?'':'<section class="card note"><b>Valores de ejemplo.</b> Los precios y comisiones por modelo son orientativos. Pon aquí lo que te paga Xiaomi por cada móvil para que las comisiones salgan bien.</section>';
-  var models=state.models.map(function(m){
-    var ask=ui.confirm==='model:'+m.id;
-    return '<section class="card mcard" data-mid="'+m.id+'">'+
-      '<div class="fld"><label>Modelo</label><input type="text" data-f="name" value="'+esc(m.name)+'" autocomplete="off"></div>'+
-      '<div class="grid"><div class="fld"><label>Precio (€)</label><input type="number" inputmode="decimal" step="0.01" min="0" data-f="price" value="'+m.price+'"></div>'+
-      '<div class="fld"><label>Comisión por móvil (€)</label><input type="number" inputmode="decimal" step="0.01" min="0" data-f="comm" value="'+m.comm+'"></div></div>'+
-      '<div class="mrow-actions"><label class="chk"><input type="checkbox" data-f="key"'+(m.key?' checked':'')+'> Key model</label>'+
-      '<button class="del'+(ask?' ask':'')+'" data-act="del-model" data-id="'+m.id+'">'+(ask?'¿Quitar?':'Quitar')+'</button></div></section>';
+  var rows=state.models.map(function(m){
+    var nv2=(m.variants||[]).length;
+    return '<div class="row"><div class="r1"><div class="l"><b>'+esc(m.name)+(m.key?'<span class="pill">KEY</span>':'')+'</b><span class="num">'+money(m.price)+' · comisión '+money(m.comm)+(nv2?' · '+nv2+(nv2===1?' variante':' variantes'):'')+'</span></div><button class="del" data-act="edit-model" data-m="'+m.id+'">Editar</button></div></div>';
   }).join('');
-  return intro+
-    '<section class="card"><h2>Mis modelos</h2><p style="margin:0;color:var(--muted);font-size:13px">Al cambiar una comisión, solo afecta a las ventas nuevas. Las ya registradas conservan la comisión con la que se guardaron.</p></section>'+
-    models+
-    '<button class="btn alt" data-act="add-model">+ Añadir modelo</button>'+
+  var modelsCard='<section class="card"><h2>Mis modelos</h2>'+(rows?'<div class="rows">'+rows+'</div>':'<p style="margin:0 0 12px;color:var(--muted);font-size:13px">Todavía no tienes modelos. Añade los que vendes, con su precio y lo que te pagan de comisión por cada móvil.</p>')+
+    '<button class="btn sm" style="margin-top:12px" data-act="add-model">+ Añadir modelo</button>'+
+    (rows?'<p style="margin:10px 0 0;color:var(--muted);font-size:12px">Al cambiar una comisión, solo afecta a las ventas nuevas. Las ya registradas conservan la comisión con la que se guardaron.</p>':'')+'</section>';
+  return modelsCard+
     '<section class="card"><h2>Inventario</h2><label class="chk"><input type="checkbox" id="imp-stock"'+(state.impStock===false?'':' checked')+'> Descontar del stock las ventas que importo</label><p style="margin:10px 0 0;color:var(--muted);font-size:12.5px">Déjalo activado si tu compañero y tú vendéis del mismo stock. Así los dos móviles se quedan con las mismas existencias.</p></section>'+
     '<section class="card"><h2>Compartir con tu compañero</h2><p style="margin:0 0 10px;color:var(--muted);font-size:13px">Se crea un archivo con tus ventas y lo envías por WhatsApp. Tu compañero lo descarga y pulsa Importar archivo: las ventas de los dos se juntan sin duplicarse. Funciona sin internet. Las ventas borradas no se borran en el otro móvil.</p>'+
     '<div class="fld"><label for="share-range">Qué enviar</label><select id="share-range"><option value="60">Últimos 60 días</option><option value="0">Todas las ventas</option></select></div>'+
@@ -699,7 +710,7 @@ function viewAjustes(){
     '<div class="fld"><label for="backup">Copia de seguridad</label><textarea id="backup" spellcheck="false" placeholder="Pega aquí una copia para restaurar"></textarea></div>'+
     '<div class="btns" style="margin-top:10px;justify-content:flex-start"><button class="btn sm" data-act="copy">Copiar mis datos</button><button class="btn alt sm" data-act="restore">Restaurar</button></div></section>'+
     '<section class="card"><h2>Datos</h2><div class="btns" style="justify-content:flex-start">'+
-    (hasEx?'<button class="btn alt sm" data-act="clear-sample">Quitar datos de ejemplo</button>':'<button class="btn alt sm" data-act="sample">Cargar datos de ejemplo</button>')+
+    (hasEx?'<button class="btn alt sm" data-act="clear-sample">Quitar datos de ejemplo</button>':'')+
     '<button class="btn warn sm" data-act="wipe">'+(ui.confirm==='wipe'?'¿Seguro? Borra todas las ventas':'Borrar todas las ventas')+'</button></div></section>';
 }
 
@@ -915,6 +926,7 @@ function viewInventario(){
     var st=stState(n);if(st==='out')out++;else if(st==='low')low++;
   });});
   var sum='<section class="card"><h2>Resumen del stock</h2><div class="glance"><div><span>En stock</span><b class="num">'+nf.format(units)+'</b><small>'+(units===1?'móvil':'móviles')+'</small></div><div><span>Valor</span><b class="num">'+money(value)+'</b><small>a PVP</small></div><div><span>Reponer</span><b class="num">'+(out+low)+'</b><small>'+out+' agotados</small></div></div></section>';
+  if(!state.models.length)return '<section class="card empty"><h3>Todavía no tienes modelos</h3><p>Añade el primero y luego apunta sus colores, capacidades y cuántos móviles tienes.</p><div class="btns"><button class="btn" data-act="add-model">Añadir modelo</button></div></section>';
   var intro=hasVars?'':'<section class="card note"><b>Todavía no hay stock.</b> Pulsa <b>+ Color y capacidad</b> en un modelo y apunta cuántos móviles tienes. Cuando registres una venta eligiendo ese color y capacidad, el stock baja solo.</section>';
   var f=ui.invFilter;
   var chips='<div class="chips">'+[['all','Todos'],['low','Poco stock'],['out','Agotados']].map(function(c){return '<button class="chip'+(f===c[0]?' on':'')+'" data-act="inv-filter" data-v="'+c[0]+'">'+c[1]+'</button>';}).join('')+'</div>';
@@ -931,10 +943,10 @@ function viewInventario(){
     }).join('');
     var sub=vars.length?(vars.length===1?'1 variante':vars.length+' variantes'):'Sin variantes';
     return '<section class="card"><div class="mh">'+phoneSVG(tierOfPrice(m.price),20)+'<div class="nm"><b>'+esc(m.name)+(m.key?'<span class="pill">KEY</span>':'')+'</b><span>'+sub+'</span></div><div class="tot"><b class="num">'+total+'</b><span>en stock</span></div></div>'+rows+
-      '<button class="btn alt sm vadd" data-act="add-var" data-m="'+m.id+'">+ Color y capacidad</button></section>';
+      '<div class="btns vadd"><button class="btn alt sm" data-act="add-var" data-m="'+m.id+'">+ Color y capacidad</button><button class="btn alt sm" data-act="edit-model" data-m="'+m.id+'">Editar modelo</button></div></section>';
   }).join('');
   if(!cards)cards='<section class="card"><p style="margin:0;color:var(--muted)">'+(f==='low'?'No hay modelos con poco stock.':'No hay modelos agotados.')+'</p></section>';
-  return sum+intro+(hasVars?chips:'')+cards;
+  return sum+intro+(hasVars?chips:'')+cards+'<button class="btn alt" data-act="add-model">+ Añadir modelo</button>';
 }
 
 function openVar(mid,vid){
@@ -1006,6 +1018,46 @@ function updateVarNote(){
   else{note.className='vnote warn';note.textContent='Solo hay '+Math.max(0,avail)+' en stock. Revisa el inventario.';}
 }
 
+
+/* ---------- Modelos: añadir, editar, quitar ---------- */
+function openModel(mid){
+  ui.mEdit=mid||null;ui.mConfirm=false;
+  var m=mid?state.models.find(function(x){return x.id===mid;}):null;
+  if(mid&&!m){ui.mEdit=null;return;}
+  $('m-title').textContent=m?'Editar modelo':'Nuevo modelo';
+  $('m-name').value=m?m.name:'';
+  $('m-price').value=m?m.price:'';
+  $('m-comm').value=m?m.comm:'';
+  $('m-key').checked=m?!!m.key:false;
+  $('m-err').textContent='';
+  var del=$('m-del');del.hidden=!m;del.textContent='Quitar este modelo';
+  $('ov3').hidden=false;
+}
+function saveModel(){
+  var err=$('m-err'),name=$('m-name').value.trim().slice(0,60);
+  var price=Math.max(0,parseFloat(String($('m-price').value).replace(',','.'))||0);
+  var comm=Math.max(0,parseFloat(String($('m-comm').value).replace(',','.'))||0);
+  if(!name){err.textContent='Escribe el nombre del modelo.';return;}
+  var dup=state.models.some(function(x){return x.id!==ui.mEdit&&x.name.toLowerCase()===name.toLowerCase();});
+  if(dup){err.textContent='Ya tienes un modelo con ese nombre.';return;}
+  var m=ui.mEdit?state.models.find(function(x){return x.id===ui.mEdit;}):null;
+  if(m){
+    if(m.name!==name){var old=m.name;state.sales.forEach(function(x){if(x.model===old)x.model=name;});m.name=name;}
+    m.price=price;m.comm=comm;m.key=$('m-key').checked;
+  }else{
+    state.models.push({id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:name,price:price,comm:comm,key:$('m-key').checked,variants:[]});
+  }
+  state.customized=true;save();
+  ui.mEdit=null;$('ov3').hidden=true;toast('Modelo guardado');render();
+}
+function delModel(){
+  if(!ui.mEdit)return;
+  if(!ui.mConfirm){ui.mConfirm=true;$('m-del').textContent='¿Seguro? Se borra también su stock';return;}
+  state.models=state.models.filter(function(x){return x.id!==ui.mEdit;});
+  state.customized=true;save();
+  ui.mEdit=null;ui.mConfirm=false;$('ov3').hidden=true;toast('Modelo quitado');render();
+}
+
 /* ---------- Eventos ---------- */
 document.addEventListener('click',function(e){
   var el=e.target.closest('[data-act]');if(!el)return;
@@ -1018,6 +1070,10 @@ document.addEventListener('click',function(e){
     case 'prev':ui.ref=shift(ui.period,ui.ref,-1);render();break;
     case 'next':ui.ref=shift(ui.period,ui.ref,1);render();break;
     case 'today':ui.ref=new Date();render();break;
+    case 'edit-model':openModel(mid);break;
+    case 'save-model':saveModel();break;
+    case 'del-model2':delModel();break;
+    case 'close-model':$('ov3').hidden=true;ui.mEdit=null;break;
     case 'inv-filter':ui.invFilter=v;render();break;
     case 'v-dec':bumpVar(mid,id,-1);break;
     case 'v-inc':bumpVar(mid,id,1);break;
@@ -1047,9 +1103,7 @@ document.addEventListener('click',function(e){
       if(ui.confirm==='model:'+id){state.models=state.models.filter(function(m){return m.id!==id;});ui.confirm=null;state.customized=true;save();}
       else ui.confirm='model:'+id;
       render();break;
-    case 'add-model':
-      state.models.push({id:'m'+Date.now().toString(36),name:'Nuevo modelo',price:0,comm:0,key:false});
-      state.customized=true;save();render();window.scrollTo(0,document.body.scrollHeight);break;
+    case 'add-model':openModel(null);break;
     case 'sample':
       state.sales=state.sales.concat(sampleData());save();ui.tab='resumen';ui.ref=new Date();toast('Datos de ejemplo cargados');render();break;
     case 'clear-sample':
